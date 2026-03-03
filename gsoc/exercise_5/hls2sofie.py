@@ -6,7 +6,10 @@ def MakeActivation(layer):
 def MakeRelu(layer):
     return SOFIE.ROperator_Relu("float")(layer["inputs"][0], layer["outputs"][0])
     
-str2method = {"Activation": MakeActivation, "relu": MakeRelu}
+def MakeElu(layer):
+    return SOFIE.ROperator_Elu("float")(layer["attributes"].get("activ_param", 1.0), layer["inputs"][0], layer["outputs"][0])
+    
+str2method = {"Activation": MakeActivation, "relu": MakeRelu, "ParametrizedActivation": MakeActivation, "elu": MakeElu}
 
 def to_ROperator(layer, name=None):
     if name is None:
@@ -17,7 +20,7 @@ def generate_sofie_model(hls_config):
     rmodel = SOFIE.RModel.RModel()
     
     # config inputs
-    rmodel.AddInputTensorInfo(hls_config["input_name"], SOFIE.ConvertStringToType("float"), [hls_config["input_shape"]])
+    rmodel.AddInputTensorInfo(hls_config["input_name"], SOFIE.ConvertStringToType("float"), hls_config["input_shape"])
     rmodel.AddInputTensorName(hls_config["input_name"])
     
     # config outputs

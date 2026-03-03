@@ -17,7 +17,7 @@ def parse(layer: Layer):
             "type": layer.class_name,
             "inputs": layer.inputs,
             "outputs": layer.outputs,
-            "attributes": get_expected_attributes(layer)
+            "attributes": dict(layer.attributes)
         }
         
 def get_model_config(model: ModelGraph):
@@ -29,6 +29,6 @@ def get_model_config(model: ModelGraph):
         layer_info = parse(layer)
         model_config["layers"].append(layer_info)
         if not model_config.get("input_shape") and layer_info["attributes"].get("n_in"):
-            model_config["input_shape"] = layer_info["attributes"]["n_in"]
+            model_config["input_shape"] = layer_info["attributes"]["input_shape"]
             model_config["input_name"] = layer_info["inputs"][0]
     return model_config 
