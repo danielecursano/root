@@ -24,7 +24,7 @@ def get_model_config(model: ModelGraph):
     """
     Returns the model configuration.
     """
-    model_config = {"layers": []}
+    model_config = {"model_name": model.config.get_project_name(), "layers": []}
     for layer in model.get_layers():
         layer_info = parse(layer)
         model_config["layers"].append(layer_info)
