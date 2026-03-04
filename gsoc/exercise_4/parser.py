@@ -9,7 +9,7 @@ def get_expected_attributes(layer):
     """
     return {k.name: layer.attributes[k.name] for k in layer.expected_attributes if k.name in layer.attributes}
 
-def parse(layer: Layer, index):
+def parse(layer: Layer):
     """
     Returns general informations about the given layer.
     """
@@ -26,14 +26,12 @@ def get_model_config(model: ModelGraph):
     Returns the model configuration.
     """
     model_config = {"model_name": model.config.get_project_name(), "layers": []}
-    index = 0
     for layer in model.get_layers():
-        layer_info = parse(layer, index)
+        layer_info = parse(layer)
         if layer_info["type"] == "Input":
             # Extract input tensor name and shape from the input layer
             model_config["input_shape"] = layer_info["attributes"]["input_shape"]
             model_config["input_name"] = layer_info["outputs"][0]
             continue
         model_config["layers"].append(layer_info)
-        index += 1
     return model_config 
