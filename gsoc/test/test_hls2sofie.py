@@ -16,6 +16,11 @@ TEST_MODELS = [
     ("dense_elu_1d", "keras", keras.Sequential([
     keras.layers.InputLayer(input_shape=(5,)),
     keras.layers.Dense(1, activation="elu")
+    ])),
+    ("reshape", "keras", keras.Sequential([
+    keras.layers.InputLayer(input_shape=(4,4)),
+    keras.layers.Reshape((16,)),
+    keras.layers.ELU()
     ]))
 ]
 
@@ -44,11 +49,12 @@ def test_rmodel(name, framework, python_model):
     # an old .dat file from a previous project.
     session = getattr(ROOT, f"TMVA_SOFIE_{name}").Session()
     
-    input_shape = model_config["input_shape"][0]
-    x = np.random.rand(input_shape).astype(np.float32)
+    input_shape = model_config["input_shape"]
+
+    x = np.random.rand(*input_shape).astype(np.float32)
     
     sofie_pred = session.infer(x)
-    py_pred = python_model.predict(x.reshape(1, input_shape))
+    py_pred = python_model.predict(x.reshape(1, *input_shape))
     
     try:
         np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)

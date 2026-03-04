@@ -1,4 +1,5 @@
 from ROOT.TMVA.Experimental import SOFIE
+import numpy as np
 
 class OperatorNotImplemented(Exception):
     def __init__(self, layer):
@@ -20,12 +21,22 @@ def MakeDense(layer):
     attr_transB = 0
     fKernelName = f"{layer['name']}/kernel"
     fBiasName = f"{layer['name']}/bias"
-    return SOFIE.ROperator_Gemm["float"](
+    return SOFIE.ROperator_Gemm["float"](   
                 attr_alpha, attr_beta, attr_transA, attr_transB, layer["inputs"][0], fKernelName, fBiasName, layer["outputs"][0]
     )
     
+def MakeReshape(layer):
+    fOpMode = SOFIE.ReshapeOpMode.Reshape
+    fNameShape = layer["name"] + "_shape"
+    op = SOFIE.ROperator_Reshape(fOpMode, 0, layer["inputs"][0], fNameShape, layer["outputs"][0])
+    return op
+    
 str2method = {"Activation": MakeActivation, 
-                "relu": MakeRelu, "ParametrizedActivation": MakeActivation, "elu": MakeElu, "Dense": MakeDense}
+                "relu": MakeRelu, 
+                "ParametrizedActivation": MakeActivation, 
+                "elu": MakeElu, 
+                "Dense": MakeDense,
+                "Reshape": MakeReshape}
 
 def to_ROperator(layer, name=None):
     if layer["type"] == "Input":
@@ -56,6 +67,10 @@ def generate_sofie_model(hls_config):
             rmodel.AddInitializedTensor["float"](f"{layer['name']}/kernel", weight.shape, weight.flatten())
         if bias is not None:
             rmodel.AddInitializedTensor["float"](f"{layer['name']}/bias", bias.shape, bias.flatten())
+        if layer["type"] == "Reshape":
+            shape = layer["attributes"].get("target_shape")
+            if shape:
+                rmodel.AddInitializedTensor["int64_t"](f"{layer['name']}_shape", [len(shape)], np.asarray(shape).data)
         op = to_ROperator(layer)
         if op is not None:
             rmodel.AddOperatorReference(op)
