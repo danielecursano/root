@@ -7,6 +7,18 @@ from tensorflow import keras
 import ROOT
 import numpy as np
 
+def concat_model():
+    input1 = keras.layers.Input(shape=(4,), name="input1")
+    input2 = keras.layers.Input(shape=(3,), name="input2")
+
+    x1 = keras.layers.Dense(8, activation='relu')(input1)
+    x2 = keras.layers.Dense(8, activation='relu')(input2)
+
+    merged = keras.layers.Concatenate(name="concat")([x1, x2])
+    output = keras.layers.Dense(1)(merged)
+
+    return keras.models.Model(inputs=[input1, input2], outputs=output)
+
 TEST_MODELS = [
     ("dense_relu_1d", "keras", keras.Sequential([
     keras.layers.InputLayer(input_shape=(10,)),
@@ -21,8 +33,36 @@ TEST_MODELS = [
     keras.layers.InputLayer(input_shape=(4,4)),
     keras.layers.Reshape((16,)),
     keras.layers.ELU()
-    ]))
+    ])),
 ]
+
+def test_concat():
+    python_model = concat_model()
+    hls_config = hls4ml.utils.config_from_keras_model(python_model)
+    hls_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config)
+    
+    model_config = get_model_config(hls_model)
+    rmodel = generate_sofie_model(model_config)
+    rmodel.Generate()
+    rmodel.OutputGenerated()
+    
+    ROOT.gInterpreter.Declare(f'#include "myproject.hxx"')
+
+    session = getattr(ROOT, f"TMVA_SOFIE_myproject").Session()
+    
+    x1 = np.random.rand(1, 4).astype(np.float32)
+    x2 = np.random.rand(1, 3).astype(np.float32)
+    
+    sofie_pred = session.infer(x1.flatten(), x2.flatten())
+    py_pred = python_model.predict([x1, x2])
+    
+    try:
+        np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
+        print(f"Test concat passed")
+    except AssertionError as e:
+        print(f"Test concat failed")
+        print(e)
+    
 
 def test_rmodel(name, framework, python_model):
 
@@ -49,7 +89,7 @@ def test_rmodel(name, framework, python_model):
     # an old .dat file from a previous project.
     session = getattr(ROOT, f"TMVA_SOFIE_{name}").Session()
     
-    input_shape = model_config["input_shape"]
+    input_shape = model_config["input_shapes"][0]
 
     x = np.random.rand(*input_shape).astype(np.float32)
     
@@ -66,4 +106,5 @@ def test_rmodel(name, framework, python_model):
 if __name__ == "__main__":
     for test in TEST_MODELS:
         test_rmodel(*test)
+    test_concat()
     

@@ -28,15 +28,18 @@ def MakeDense(layer):
 def MakeReshape(layer):
     fOpMode = SOFIE.ReshapeOpMode.Reshape
     fNameShape = layer["name"] + "_shape"
-    op = SOFIE.ROperator_Reshape(fOpMode, 0, layer["inputs"][0], fNameShape, layer["outputs"][0])
-    return op
-    
+    return SOFIE.ROperator_Reshape(fOpMode, 0, layer["inputs"][0], fNameShape, layer["outputs"][0])
+
+def MakeConcat(layer):
+    return SOFIE.ROperator_Concat(layer["inputs"], layer["attributes"]["axis"], 0, layer["outputs"][0])
+
 str2method = {"Activation": MakeActivation, 
                 "relu": MakeRelu, 
                 "ParametrizedActivation": MakeActivation, 
                 "elu": MakeElu, 
                 "Dense": MakeDense,
-                "Reshape": MakeReshape}
+                "Reshape": MakeReshape,
+                "Concatenate": MakeConcat}
 
 def to_ROperator(layer, name=None):
     if layer["type"] == "Input":
@@ -54,8 +57,9 @@ def generate_sofie_model(hls_config):
     rmodel = SOFIE.RModel.RModel(hls_config["model_name"])
     
     # config inputs
-    rmodel.AddInputTensorInfo(hls_config["input_name"], SOFIE.ConvertStringToType("float"), hls_config["input_shape"])
-    rmodel.AddInputTensorName(hls_config["input_name"])
+    for inp_name, inp_shape in zip(hls_config["input_names"], hls_config["input_shapes"]):
+        rmodel.AddInputTensorInfo(inp_name[0], SOFIE.ConvertStringToType("float"), inp_shape)
+        rmodel.AddInputTensorName(inp_name[0])
     
     # config outputs
     rmodel.AddOutputTensorNameList(hls_config["layers"][-1]["outputs"])

@@ -25,13 +25,13 @@ def get_model_config(model: ModelGraph):
     """
     Returns the model configuration.
     """
-    model_config = {"model_name": model.config.get_project_name(), "layers": []}
+    model_config = {"model_name": model.config.get_project_name(), "layers": [], "input_shapes": [], "input_names": []}
     for layer in model.get_layers():
         layer_info = parse(layer)
         if layer_info["type"] == "Input":
             # Extract input tensor name and shape from the input layer
-            model_config["input_shape"] = layer_info["attributes"]["input_shape"]
-            model_config["input_name"] = layer_info["outputs"][0]
+            model_config["input_shapes"].append(layer_info["attributes"]["input_shape"])
+            model_config["input_names"].append(layer_info["outputs"])
             continue
         model_config["layers"].append(layer_info)
     return model_config 
