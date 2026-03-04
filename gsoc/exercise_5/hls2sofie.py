@@ -5,16 +5,16 @@ class OperatorNotImplemented(Exception):
     def __init__(self, layer):
         super().__init__(f"Operator {layer.get('type')} not implemented")
         
-def MakeActivation(layer):
-    return to_ROperator(layer, name=layer["attributes"]["activation"])
+def MakeActivation(layer, rmodel):
+    return to_ROperator(layer, rmodel, name=layer["attributes"]["activation"])
                                                                        
-def MakeRelu(layer):
+def MakeRelu(layer, rmodel):
     return SOFIE.ROperator_Relu("float")(layer["inputs"][0], layer["outputs"][0])
     
-def MakeElu(layer):
+def MakeElu(layer, rmodel):
     return SOFIE.ROperator_Elu("float")(layer["attributes"].get("activ_param", 1.0), layer["inputs"][0], layer["outputs"][0])
     
-def MakeDense(layer):
+def MakeDense(layer, rmodel):
     attr_alpha = 1.0
     attr_beta = 1.0
     attr_transA = 0
@@ -25,12 +25,14 @@ def MakeDense(layer):
                 attr_alpha, attr_beta, attr_transA, attr_transB, layer["inputs"][0], fKernelName, fBiasName, layer["outputs"][0]
     )
     
-def MakeReshape(layer):
+def MakeReshape(layer, rmodel):
     fOpMode = SOFIE.ReshapeOpMode.Reshape
     fNameShape = layer["name"] + "_shape"
+    shape = layer["attributes"].get("target_shape")
+    rmodel.AddInitializedTensor["int64_t"](f"{layer['name']}_shape", [len(shape)], np.asarray(shape).data)
     return SOFIE.ROperator_Reshape(fOpMode, 0, layer["inputs"][0], fNameShape, layer["outputs"][0])
 
-def MakeConcat(layer):
+def MakeConcat(layer, rmodel):
     return SOFIE.ROperator_Concat(layer["inputs"], layer["attributes"]["axis"], 0, layer["outputs"][0])
 
 str2method = {"Activation": MakeActivation, 
@@ -41,7 +43,7 @@ str2method = {"Activation": MakeActivation,
                 "Reshape": MakeReshape,
                 "Concatenate": MakeConcat}
 
-def to_ROperator(layer, name=None):
+def to_ROperator(layer, rmodel, name=None):
     if layer["type"] == "Input":
         return None
         
@@ -51,9 +53,12 @@ def to_ROperator(layer, name=None):
     method =  str2method.get(name)
     if method is None:
         raise OperatorNotImplemented(layer)
-    return method(layer)
+    return method(layer, rmodel)
     
 def generate_sofie_model(hls_config):
+    if len(hls_config["layers"]) == 0:
+        raise ValueError("Model must contain at least one layer")
+        
     rmodel = SOFIE.RModel.RModel(hls_config["model_name"])
     
     # config inputs
@@ -71,11 +76,11 @@ def generate_sofie_model(hls_config):
             rmodel.AddInitializedTensor["float"](f"{layer['name']}/kernel", weight.shape, weight.flatten())
         if bias is not None:
             rmodel.AddInitializedTensor["float"](f"{layer['name']}/bias", bias.shape, bias.flatten())
-        if layer["type"] == "Reshape":
-            shape = layer["attributes"].get("target_shape")
-            if shape:
-                rmodel.AddInitializedTensor["int64_t"](f"{layer['name']}_shape", [len(shape)], np.asarray(shape).data)
-        op = to_ROperator(layer)
+        #if layer["type"] == "Reshape":
+         #   shape = layer["attributes"].get("target_shape")
+          #  if shape:
+           #     rmodel.AddInitializedTensor["int64_t"](f"{layer['name']}_shape", [len(shape)], np.asarray(shape).data)
+        op = to_ROperator(layer, rmodel)
         if op is not None:
             rmodel.AddOperatorReference(op)
             
