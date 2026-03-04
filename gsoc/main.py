@@ -7,8 +7,9 @@ from tensorflow import keras
 
 model = keras.Sequential([
     keras.layers.InputLayer(input_shape=(10,)),
-    keras.layers.ELU(alpha=1.2),
-    keras.layers.Dense(1, activation="relu")
+    keras.layers.Dense(4, activation="relu"),
+    keras.layers.Reshape((2, 2)),
+    keras.layers.Activation("elu")
 ])
 
 config = hls4ml.utils.config_from_keras_model(model)

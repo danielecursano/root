@@ -86,7 +86,7 @@ def test_rmodel(name, framework, python_model):
     # Load the project namespace dynamically using a string.
     # This is required to get the correct session, because following
     # the tutorial methods directly may cause the session to read
-    # an old .dat file from a previous project.
+    # an old .dat file from a previous project with the same name. 
     session = getattr(ROOT, f"TMVA_SOFIE_{name}").Session()
     
     input_shape = model_config["input_shapes"][0]
