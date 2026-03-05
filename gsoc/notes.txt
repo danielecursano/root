@@ -6,6 +6,6 @@ Regarding exercise 5, I implemented all the mentioned operators and tested them 
 All available tests are located in gsoc/test and you can run the tests using python -m test.(test_parser/test_hls2sofie)
 I also wrote a test for function 4 using the provided onnx model. I followed hls4ml onnx conversion guide in order to parse the model correctly.
 
-At the moment, exercise 5 has been tested only with the keras framework, and the rmodel supports only the float type, as seen in the SOFIE keras parser.
+At the moment the rmodel generated supports only the float type, like in the SOFIE keras parser.
 
 In the end, I refactored the makeOperators methods so that they can directly modify the rmodel when adding additional information about tensors or shapes used in the model. This design avoids using multiple if statements in the main function.

@@ -6,6 +6,8 @@ import tensorflow as tf
 from tensorflow import keras
 import ROOT
 import numpy as np
+import torch
+import torch.nn as nn
 
 def concat_model():
     input1 = keras.layers.Input(shape=(4,), name="input1")
@@ -18,6 +20,38 @@ def concat_model():
     output = keras.layers.Dense(1)(merged)
 
     return keras.models.Model(inputs=[input1, input2], outputs=output)
+    
+class TorchModel(nn.Module):
+    def __init__(self, input_shape):
+        assert type(input_shape) == tuple
+        super().__init__()
+        self.input_shape = input_shape
+    def forward(self, x):
+        pass
+    def predict(self, x):
+        x = torch.from_numpy(x)
+        return self.forward(x).detach().numpy()
+   
+class DenseModel(TorchModel):
+    def __init__(self, input_shape):
+        super().__init__(input_shape)
+        self.linear = nn.Linear(input_shape[0], 1)
+        
+    def forward(self, x):
+        return self.linear(x)
+
+class ReluModel(TorchModel):
+    def __init__(self, input_shape):
+        super().__init__(input_shape)
+    def forward(self, x):
+        return nn.functional.relu(x)
+
+class EluModel(TorchModel):
+    def __init__(self, input_shape):
+        super().__init__(input_shape)
+    def forward(self, x):
+        return nn.functional.elu(x)
+
 
 TEST_MODELS = [
     ("dense_relu_1d", "keras", keras.Sequential([
@@ -34,6 +68,9 @@ TEST_MODELS = [
     keras.layers.Reshape((16,)),
     keras.layers.ELU()
     ])),
+    ("dense_1d", "torch", DenseModel(input_shape=(1,))),
+    ("relu_1d", "torch", ReluModel(input_shape=(1,))),
+    ("elu_1d", "torch", EluModel(input_shape=(1,)))
 ]
 
 def test_concat():
@@ -69,6 +106,9 @@ def test_rmodel(name, framework, python_model):
     if framework == "keras":
         hls_config = hls4ml.utils.config_from_keras_model(python_model)
         hls_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config)
+    elif framework == "torch":
+        hls_config = hls4ml.utils.config.config_from_pytorch_model(python_model, python_model.input_shape)
+        hls_model = hls4ml.converters.convert_from_pytorch_model(python_model, hls_config=hls_config)
     else:
         print(f"Test {name}_{framework} failed")
         print("{framework} not implemented")
@@ -94,6 +134,7 @@ def test_rmodel(name, framework, python_model):
     x = np.random.rand(*input_shape).astype(np.float32)
     
     sofie_pred = session.infer(x)
+
     py_pred = python_model.predict(x.reshape(1, *input_shape))
     
     try:
