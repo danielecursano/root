@@ -8,6 +8,7 @@ import ROOT
 import numpy as np
 import torch
 import torch.nn as nn
+import pytest
 
 def concat_model():
     input1 = keras.layers.Input(shape=(4,), name="input1")
@@ -93,14 +94,10 @@ def test_concat():
     sofie_pred = session.infer(x1.flatten(), x2.flatten())
     py_pred = python_model.predict([x1, x2])
     
-    try:
-        np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
-        print(f"Test concat passed")
-    except AssertionError as e:
-        print(f"Test concat failed")
-        print(e)
-    
+    np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
 
+    
+@pytest.mark.parametrize("name,framework,python_model", TEST_MODELS)
 def test_rmodel(name, framework, python_model):
 
     if framework == "keras":
@@ -109,9 +106,6 @@ def test_rmodel(name, framework, python_model):
     elif framework == "torch":
         hls_config = hls4ml.utils.config.config_from_pytorch_model(python_model, python_model.input_shape)
         hls_model = hls4ml.converters.convert_from_pytorch_model(python_model, hls_config=hls_config)
-    else:
-        print(f"Test {name}_{framework} failed")
-        print("{framework} not implemented")
         
     model_config = get_model_config(hls_model)
     
@@ -137,15 +131,6 @@ def test_rmodel(name, framework, python_model):
 
     py_pred = python_model.predict(x.reshape(1, *input_shape))
     
-    try:
-        np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
-        print(f"Test {name}_{framework} passed")
-    except AssertionError as e:
-        print(f"Test {name}_{framework} failed")
-        print(e)
-    
-if __name__ == "__main__":
-    for test in TEST_MODELS:
-        test_rmodel(*test)
-    test_concat()
+    np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
+
     

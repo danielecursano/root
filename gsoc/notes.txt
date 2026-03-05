@@ -3,7 +3,7 @@ For exercise 4, my initial approach was to include in the final model configurat
 However, while working on Exercise 5, I realized that I needed to include some additional layer attributes in order to correctly build the corresponding ROperators in the SOFIE model. 
 
 Regarding exercise 5, I implemented all the mentioned operators and tested them with different models.
-All available tests are located in gsoc/test and you can run the tests using python -m test.(test_parser/test_hls2sofie)
+All available tests are located in gsoc/test and you can run the tests using pytest test/<test_file.py>.
 I also wrote a test for function 4 using the provided onnx model. I followed hls4ml onnx conversion guide in order to parse the model correctly.
 
 At the moment the rmodel generated supports only the float type, like in the SOFIE keras parser.

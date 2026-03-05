@@ -1,12 +1,14 @@
 import hls4ml
 import tensorflow as tf
 from tensorflow import keras
+import pytest
 
 from exercise_4 import get_model_config
-    
-def test_keras_sequential():
+
+@pytest.mark.parametrize("shape", ([10, ], [2, 2], [1, 2, 3]))
+def test_keras_sequential(shape):
     model = keras.Sequential([
-        keras.layers.Input(shape=(10,)),
+        keras.layers.Input(shape=shape),
         keras.layers.Dense(32),
         keras.layers.Dense(16),
         keras.layers.Dense(1)
@@ -17,7 +19,6 @@ def test_keras_sequential():
 
     ret_config = get_model_config(hls_model)
 
+    assert ret_config["input_shapes"] == [shape]
     assert len(ret_config["layers"]) == len(model.layers), f'len(ret_config["layers"]) should be {len(model.layers)} != {len(ret_config["layers"])}'
     
-if __name__ == "__main__":
-    test_keras_sequential()
