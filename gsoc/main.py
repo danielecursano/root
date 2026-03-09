@@ -27,4 +27,4 @@ print(model.predict(x.reshape((1, 10))))
 
 # Alternative method to create the session once and reuse it
 sofie_session = SofieBackend.get_sofie_session(hls_model)
-print(sofie_session.infer(x))
+print(np.array(sofie_session.infer(x)))

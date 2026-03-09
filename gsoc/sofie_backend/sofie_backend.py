@@ -33,7 +33,12 @@ class SofieBackend(Backend):
         model.apply_flow(self.get_writer_flow())
         
     def compile(self, model):
-        # Inherited from FPGABackend. ModelGraph still needs a .so to extract the top function
+        """
+        Inherited from FPGABackend. It compiles a .cpp file into a .so library
+        to expose a top function used to run inference.
+        See templates/build_lib.sh: it compiles a .cpp file that wraps Session.infer
+        so it can be used by hls4ml.
+        """
         lib_name = None
         ret_val = subprocess.run(
             ['./build_lib.sh'],
@@ -54,11 +59,12 @@ class SofieBackend(Backend):
     
     @classmethod    
     def convert_precision_string(cls, precision):
-        # SOFIE RModel supports only float precision at the moment
+        # Returns the precision type to ModelGraph. This type is equivalent to a 32-bit C++ floating-point type.
         return StandardFloatPrecisionType(width=32, exponent=8, use_cpp_type=True)
     
     @staticmethod
     def get_sofie_session(model):
+        # Extract TMVA Session to run inference with the generated model. 
         header_path = model.config.get_output_dir() + "/" + model.config.get_project_name()
         ROOT.gInterpreter.Declare(f'#include "{header_path}.hxx"')
         sofie_project = getattr(ROOT, f"TMVA_SOFIE_{model.config.get_project_name()}", None)

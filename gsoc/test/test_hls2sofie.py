@@ -133,4 +133,5 @@ def test_rmodel(name, framework, python_model):
     
     np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
 
-    
+    np.array_equal(np.array(sofie_pred).flatten(), py_pred.flatten())
+

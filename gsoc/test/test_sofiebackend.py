@@ -109,12 +109,21 @@ def test_rmodel(name, framework, python_model, shape):
 
     hls_model.compile()    
 
+    sofie_model = SofieBackend.get_sofie_session(hls_model)
+
     x = np.random.rand(*shape).astype(np.float32)
     
     sofie_pred = hls_model.predict(x)
 
     py_pred = python_model.predict(x.reshape(1, *shape))
-    
-    np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
 
+    session_pred = sofie_model.infer(x)
+    
+    # test sofiebackend model vs python model
+    np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
+    np.array_equal(np.array(sofie_pred).flatten(), py_pred.flatten())
+
+    # test session.infer vs python model
+    np.testing.assert_allclose(np.array(session_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
+    np.array_equal(np.array(session_pred).flatten(), py_pred.flatten())
     
