@@ -142,19 +142,24 @@ class SofieWriter(Writer):
         model_inputs = [k.name for k in model.get_input_variables()]
 
         bridge_src = (filedir / '../templates/myproject.cpp').resolve()
-        bridge_dst = Path(f'{model.config.get_output_dir()}/myproject.cpp').resolve()
+        bridge_dst = Path(f'{model.config.get_output_dir()}/{model.config.get_project_name()}.cpp').resolve()
+
+        dat_path = "" 
+        if any(f.endswith(".dat") for f in os.listdir(f'{model.config.get_output_dir()}/')):
+            dat_path = f"{model.config.get_output_dir()}/{model.config.get_project_name()}.dat"
+
         with open(bridge_src) as src, open(bridge_dst, 'w') as dst:
             for line in src.readlines():
                 line = line.replace('myproject', model.config.get_project_name())
                 line = line.replace('//insert_inputs', ",".join([f"const float* {inp}" for inp in model_inputs]))
                 line = line.replace('//insert_ref_inputs', ",".join([f"{inp}" for inp in model_inputs]))
-                line = line.replace('//insert_dat_path', f"{model.config.get_output_dir()}/{model.config.get_project_name()}.dat")
+                line = line.replace('//insert_dat_path', dat_path)
                 dst.write(line)
         
     def write(self, model):
         self.write_project_dir(model)
-        self.write_build_script(model)
-        self.write_bridge(model)
         rmodel = generate_sofie_model(get_model_config(model))
         rmodel.Generate()
         rmodel.OutputGenerated(f"./{model.config.get_output_dir()}/{model.config.get_project_name()}.hxx")
+        self.write_build_script(model)
+        self.write_bridge(model)
