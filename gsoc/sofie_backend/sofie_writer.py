@@ -140,7 +140,7 @@ class SofieWriter(Writer):
     def write_bridge(self, model):
         filedir = Path(__file__)
         model_inputs = [k.name for k in model.get_input_variables()]
-        # build_lib.sh
+
         bridge_src = (filedir / '../templates/myproject.cpp').resolve()
         bridge_dst = Path(f'{model.config.get_output_dir()}/myproject.cpp').resolve()
         with open(bridge_src) as src, open(bridge_dst, 'w') as dst:

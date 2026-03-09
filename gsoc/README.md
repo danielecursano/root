@@ -21,4 +21,17 @@ Alternatively, you can extract the SOFIE session directly using the following st
 SofieBackend.get_sofie_session(hls_model)
 ```
 
+or you can include the generated C++ code in 'projectdir/projectname.hxx' in a C++ project.
+
 This way, SOFIE could reuse the existing hls4ml tests and the optimization flows already implemented.
+
+# Future developments
+
+hls4ml backends can override layer classes by adding custom attributes.  
+Currently, SOFIE backend keeps the original classes from `hls4ml.model.layers` without modification.  
+In the future, SOFIE may need to register additional attributes that are not currently available.
+
+For the SOFIE writer, the implementation from Exercise 5 was reused.  
+A possible improvement would be to avoid using the get_model_config method and instead write the RModel directly by inspecting ModelGraph, following the approach used by other writers in hls4ml.
+
+Other future work could include implementing new operators and supporting different types of model architectures.
