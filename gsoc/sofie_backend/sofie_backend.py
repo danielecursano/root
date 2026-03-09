@@ -13,7 +13,7 @@ class SofieBackend(Backend):
         super().__init__('Sofie')
         initializers = self._get_layer_initializers()
         self._default_flow = register_flow('init_layers', initializers, requires=[], backend=self.name)
-        self._writer_flow = register_flow('write', ['make_stamp', 'sofie:write_hls'], requires=[self._default_flow], backend=self.name)
+        self._writer_flow = register_flow('write', ['make_stamp', 'sofie:write_code'], requires=[self._default_flow], backend=self.name)
         self.writer = get_writer(self.name)
         
     def create_initial_config(self, **kwargs):
@@ -68,8 +68,8 @@ class SofieBackend(Backend):
         return session
         
     @model_optimizer()
-    def write_hls(self, model):
-        self.writer.write_hls(model)
+    def write_code(self, model):
+        self.writer.write(model)
         return True
         
         

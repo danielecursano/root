@@ -151,7 +151,7 @@ class SofieWriter(Writer):
                 line = line.replace('//insert_dat_path', f"{model.config.get_output_dir()}/{model.config.get_project_name()}.dat")
                 dst.write(line)
         
-    def write_hls(self, model):
+    def write(self, model):
         self.write_project_dir(model)
         self.write_build_script(model)
         self.write_bridge(model)
