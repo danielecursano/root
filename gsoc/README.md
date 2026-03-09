@@ -31,9 +31,6 @@ hls4ml backends can override layer classes by adding custom attributes.
 Currently, SOFIE backend keeps the original classes from `hls4ml.model.layers` without modification.  
 In the future, SOFIE may need to register additional attributes that are not currently available.
 
-For the SOFIE writer, the implementation from Exercise 5 was reused.  
-A possible improvement would be to avoid using the get_model_config method and instead write the RModel directly by inspecting ModelGraph, following the approach used by other writers in hls4ml.
-
 Other future work could include implementing new operators and supporting different types of model architectures.
 
-Like other HLS backends, there is the possibility of writing input testbenches to run inference completely in C++ without invoking Python methods.
+Like other backends, there is the possibility of writing input testbenches to run inference completely in C++ without invoking Python methods.
