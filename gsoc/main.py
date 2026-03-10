@@ -17,14 +17,14 @@ model = keras.Sequential([
 ])
 
 config = hls4ml.utils.config_from_keras_model(model, backend='Sofie')
-hls_model = hls4ml.converters.convert_from_keras_model(model, hls_config=config, backend='Sofie')
+cpp_model = hls4ml.converters.convert_from_keras_model(model, hls_config=config, backend='Sofie')
 
-hls_model.compile()
+cpp_model.compile()
 x = np.random.rand(10).astype(np.float32)
-y = hls_model.predict(x)
+y = cpp_model.predict(x)
 print(y)
 print(model.predict(x.reshape((1, 10))))
 
 # Alternative method to create the session once and reuse it
-sofie_session = load_sofie_session(hls_model.config.get_output_dir() +'/'+ hls_model.config.get_project_name())
+sofie_session = load_sofie_session(cpp_model.config.get_output_dir() +'/'+ cpp_model.config.get_project_name())
 print(np.array(sofie_session.infer(x)))

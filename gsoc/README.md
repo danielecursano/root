@@ -24,7 +24,7 @@ The backend follows the default flow used by other HLS backends:
 
 #### Option A: Use ModelGraph predict (Python)
 ```python
-hls_model.predict(x)
+cpp_model.predict(x)
 ```
 
 #### Option B: Extract SOFIE Session (Python)

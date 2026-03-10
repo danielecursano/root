@@ -82,13 +82,13 @@ TEST_MODELS = [
 def test_concat():
     python_model = concat_model()
     hls_config = hls4ml.utils.config_from_keras_model(python_model, backend="Sofie")
-    hls_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config, backend="Sofie")
-    hls_model.compile()
+    cpp_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config, backend="Sofie")
+    cpp_model.compile()
     
     x1 = np.random.rand(1, 4).astype(np.float32)
     x2 = np.random.rand(1, 3).astype(np.float32)
     
-    sofie_pred = hls_model.predict([x1, x2])
+    sofie_pred = cpp_model.predict([x1, x2])
     py_pred = python_model.predict([x1, x2])
     
     np.testing.assert_allclose(sofie_pred.flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
@@ -99,21 +99,21 @@ def test_rmodel(name, framework, python_model, shape):
     output_dir = f"{name}_{framework}"
     if framework == "keras":
         hls_config = hls4ml.utils.config_from_keras_model(python_model, backend="Sofie")
-        hls_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config, backend="Sofie", output_dir=output_dir)
+        cpp_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config, backend="Sofie", output_dir=output_dir)
     elif framework == "torch":
         hls_config = hls4ml.utils.config.config_from_pytorch_model(python_model, python_model.input_shape, backend="Sofie")
-        hls_model = hls4ml.converters.convert_from_pytorch_model(python_model, hls_config=hls_config, backend="Sofie", output_dir=output_dir)
+        cpp_model = hls4ml.converters.convert_from_pytorch_model(python_model, hls_config=hls_config, backend="Sofie", output_dir=output_dir)
     
     # Necessary to prevent SOFIE from loading a .dat file from a project with the same name
-    hls_model.config.config["ProjectName"] = name
+    cpp_model.config.config["ProjectName"] = name
 
-    hls_model.compile()    
+    cpp_model.compile()    
 
-    sofie_model = load_sofie_session(hls_model.config.get_output_dir() + '/' + hls_model.config.get_project_name())
+    sofie_model = load_sofie_session(cpp_model.config.get_output_dir() + '/' + cpp_model.config.get_project_name())
 
     x = np.random.rand(*shape).astype(np.float32)
     
-    sofie_pred = hls_model.predict(x)
+    sofie_pred = cpp_model.predict(x)
 
     py_pred = python_model.predict(x.reshape(1, *shape))
 

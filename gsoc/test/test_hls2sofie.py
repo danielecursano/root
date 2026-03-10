@@ -77,9 +77,9 @@ TEST_MODELS = [
 def test_concat():
     python_model = concat_model()
     hls_config = hls4ml.utils.config_from_keras_model(python_model)
-    hls_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config)
+    cpp_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config)
     
-    model_config = get_model_config(hls_model)
+    model_config = get_model_config(cpp_model)
     rmodel = generate_sofie_model(model_config)
     rmodel.Generate()
     rmodel.OutputGenerated()
@@ -102,12 +102,12 @@ def test_rmodel(name, framework, python_model):
 
     if framework == "keras":
         hls_config = hls4ml.utils.config_from_keras_model(python_model)
-        hls_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config)
+        cpp_model = hls4ml.converters.convert_from_keras_model(python_model, hls_config=hls_config)
     elif framework == "torch":
         hls_config = hls4ml.utils.config.config_from_pytorch_model(python_model, python_model.input_shape)
-        hls_model = hls4ml.converters.convert_from_pytorch_model(python_model, hls_config=hls_config)
+        cpp_model = hls4ml.converters.convert_from_pytorch_model(python_model, hls_config=hls_config)
         
-    model_config = get_model_config(hls_model)
+    model_config = get_model_config(cpp_model)
     
     model_config["model_name"] = name
 
