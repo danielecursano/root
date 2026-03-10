@@ -1,4 +1,4 @@
-from sofie_backend import SofieBackend, SofieWriter
+from sofie_backend import SofieBackend, SofieWriter, load_sofie_session
 
 import hls4ml
 import tensorflow as tf
@@ -109,7 +109,7 @@ def test_rmodel(name, framework, python_model, shape):
 
     hls_model.compile()    
 
-    sofie_model = SofieBackend.get_sofie_session(hls_model)
+    sofie_model = load_sofie_session(hls_model.config.get_output_dir() + '/' + hls_model.config.get_project_name())
 
     x = np.random.rand(*shape).astype(np.float32)
     

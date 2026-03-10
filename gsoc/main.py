@@ -4,7 +4,7 @@ from hls4ml.writer import register_writer
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
-from sofie_backend import SofieBackend, SofieWriter
+from sofie_backend import SofieBackend, SofieWriter, load_sofie_session
 
 register_writer('Sofie', SofieWriter)
 register_backend('Sofie', SofieBackend)
@@ -26,5 +26,5 @@ print(y)
 print(model.predict(x.reshape((1, 10))))
 
 # Alternative method to create the session once and reuse it
-sofie_session = SofieBackend.get_sofie_session(hls_model)
+sofie_session = load_sofie_session(hls_model.config.get_output_dir() +'/'+ hls_model.config.get_project_name())
 print(np.array(sofie_session.infer(x)))

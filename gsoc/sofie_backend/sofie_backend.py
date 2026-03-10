@@ -61,18 +61,7 @@ class SofieBackend(Backend):
     def convert_precision_string(cls, precision):
         # Returns the precision type to ModelGraph. This type is equivalent to a 32-bit C++ floating-point type.
         return StandardFloatPrecisionType(width=32, exponent=8, use_cpp_type=True)
-    
-    @staticmethod
-    def get_sofie_session(model):
-        # Extract TMVA Session to run inference with the generated model. 
-        header_path = model.config.get_output_dir() + "/" + model.config.get_project_name()
-        ROOT.gInterpreter.Declare(f'#include "{header_path}.hxx"')
-        sofie_project = getattr(ROOT, f"TMVA_SOFIE_{model.config.get_project_name()}", None)
-        if not sofie_project:
-            raise RuntimeError(f"SOFIE namespace TMVA_SOFIE_{model.config.get_project_name()} not found.")
-        session = sofie_project.Session(header_path+".dat")
-        return session
-        
+            
     @model_optimizer()
     def write_code(self, model):
         self.writer.write(model)
