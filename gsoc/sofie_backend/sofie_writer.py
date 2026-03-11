@@ -99,28 +99,30 @@ class SofieWriter(Writer):
                 dst.write(line)
     
     def write_rmodel(self, model):
+        rmodel = SOFIE.RModel.RModel(model.config.get_project_name())
+    
         for input_layer in model.get_input_variables():
-            self.rmodel.AddInputTensorInfo(input_layer.name, SOFIE.ConvertStringToType("float"), input_layer.shape)
-            self.rmodel.AddInputTensorName(input_layer.name)
+            rmodel.AddInputTensorInfo(input_layer.name, SOFIE.ConvertStringToType("float"), input_layer.shape)
+            rmodel.AddInputTensorName(input_layer.name)
 
-        self.rmodel.AddOutputTensorNameList(list(model.get_layers())[-1].outputs)
+        rmodel.AddOutputTensorNameList(list(model.get_layers())[-1].outputs)
 
         for layer in model.get_layers():
             weight = layer.attributes.get("weight_data")
             bias = layer.attributes.get("bias_data")
             if weight is not None:
-                self.rmodel.AddInitializedTensor["float"](f"{layer.name}/kernel", weight.shape, weight.flatten())
+                rmodel.AddInitializedTensor["float"](f"{layer.name}/kernel", weight.shape, weight.flatten())
             if bias is not None:
-                self.rmodel.AddInitializedTensor["float"](f"{layer.name}/bias", bias.shape, bias.flatten())
-            op = to_ROperator(layer, self.rmodel)
+                rmodel.AddInitializedTensor["float"](f"{layer.name}/bias", bias.shape, bias.flatten())
+            op = to_ROperator(layer, rmodel)
             if op is not None:
-                self.rmodel.AddOperatorReference(op)
+                rmodel.AddOperatorReference(op)
+        
+        rmodel.Generate()
+        rmodel.OutputGenerated(f"./{model.config.get_output_dir()}/{model.config.get_project_name()}.hxx")
         
     def write(self, model):
-        self.rmodel = SOFIE.RModel.RModel(model.config.get_project_name())
-        self.write_rmodel(model)
         self.write_project_dir(model)
-        self.rmodel.Generate()
-        self.rmodel.OutputGenerated(f"./{model.config.get_output_dir()}/{model.config.get_project_name()}.hxx")
+        self.write_rmodel(model)
         self.write_build_script(model)
         self.write_bridge(model)

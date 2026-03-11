@@ -43,13 +43,15 @@ By integrating with `hls4ml`, SOFIE can:
 ## Issues
 
 ### Duplicate Session Names Load Wrong .dat File
-**Problem:** When loading two sessions one after the other with the same name, SOFIE loads the correct header but the wrong .dat file.
+**Problem:** When loading two sessions one after the other with the same name (in tests for example), SOFIE loads the correct header but the wrong .dat file.
 
 **Solution:** Ensure every project has a unique name.
 
 ## Future Developments
 
+- **MultiModelGraph** - Implement and test SOFIE backend for hls4ml MultiModelGraph class
+- **Multi output models** - Generalize the rmodel to support models with multiple outputs
 - **Custom Layer Attributes** - hls4ml backends can override layer classes by adding custom attributes. Currently, SOFIE backend keeps the original classes from `hls4ml.model.layers` without modification. In the future, SOFIE may need to register additional attributes.
 - **New Operators** - Implement additional operators as needed.
-- **Model Architectures** - Support different types of model architectures beyond current scope.
+- **Model Architectures** - Support different types of model architectures.
 - **C++ Testbenches** - Develop comprehensive input testbenches for pure C++ inference.
