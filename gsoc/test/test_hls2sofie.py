@@ -94,7 +94,7 @@ def test_concat():
     sofie_pred = session.infer(x1.flatten(), x2.flatten())
     py_pred = python_model.predict([x1, x2])
     
-    np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
+    np.array_equal(np.array(sofie_pred).flatten(), py_pred.flatten())
 
     
 @pytest.mark.parametrize("name,framework,python_model", TEST_MODELS)
@@ -131,7 +131,5 @@ def test_rmodel(name, framework, python_model):
 
     py_pred = python_model.predict(x.reshape(1, *input_shape))
     
-    np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
-
     np.array_equal(np.array(sofie_pred).flatten(), py_pred.flatten())
 

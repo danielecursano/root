@@ -91,7 +91,7 @@ def test_concat():
     sofie_pred = cpp_model.predict([x1, x2])
     py_pred = python_model.predict([x1, x2])
     
-    np.testing.assert_allclose(sofie_pred.flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
+    np.array_equal(np.array(sofie_pred).flatten(), py_pred.flatten())
 
     
 @pytest.mark.parametrize("name,framework,python_model,shape", TEST_MODELS)
@@ -120,10 +120,8 @@ def test_rmodel(name, framework, python_model, shape):
     session_pred = sofie_model.infer(x)
     
     # test sofiebackend model vs python model
-    np.testing.assert_allclose(np.array(sofie_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
     np.array_equal(np.array(sofie_pred).flatten(), py_pred.flatten())
 
     # test session.infer vs python model
-    np.testing.assert_allclose(np.array(session_pred).flatten(), py_pred.flatten(), rtol=1e-6, atol=1e-7)
     np.array_equal(np.array(session_pred).flatten(), py_pred.flatten())
     

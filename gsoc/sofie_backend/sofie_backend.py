@@ -26,7 +26,8 @@ class SofieBackend(Backend):
         return self._writer_flow
         
     def create_layer_class(self, layer_class):
-        # No additional attributes for layer classes
+        # Wraps hls4ml.model.layers classes with a backend-specific class to add extra attributes.
+        # Not needed for the Sofie backend at the moment.
         return layer_class
         
     def write(self, model):
